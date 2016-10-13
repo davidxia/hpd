@@ -1,0 +1,24 @@
+*-user.conf
+
+## Artifacts
+*.class
+docs/api/out
+
+## Package Files
+*.jar
+*.war
+*.ear
+target
+
+## IntelliJ
+.idea
+*.iml
+
+## Logs
+*.log
+
+## Temp
+*~
+.#*
+
+dependency-reduced-pom.xml
