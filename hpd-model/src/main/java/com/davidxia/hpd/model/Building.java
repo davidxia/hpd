@@ -4,6 +4,8 @@ import io.norberg.automatter.AutoMatter;
 
 import java.time.Instant;
 
+import javax.annotation.Nullable;
+
 @AutoMatter
 public interface Building {
 
@@ -21,30 +23,41 @@ public interface Building {
 
   String zip();
 
-  short block();
+  int block();
 
   short lot();
 
-  int bin();
+  @Nullable
+  Integer bin();
 
-  int communityBoard();
+  @Nullable
+  Integer communityBoard();
 
+  @Nullable
   String censusTract();
 
+  @Nullable
   String managementProgram();
 
+  @Nullable
   DobBuildingClass dobBuildingClass();
 
-  int legalStories();
+  @Nullable
+  Integer legalStories();
 
-  int legalClassA();
+  @Nullable
+  Integer legalClassA();
 
-  int legalClassB();
+  @Nullable
+  Integer legalClassB();
 
-  int registrationId();
+  @Nullable
+  Integer registrationId();
 
+  @Nullable
   BuildingLifeCycle buildingLifeCycle();
 
+  @Nullable
   RecordStatus recordStatus();
 
   Instant created();

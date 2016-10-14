@@ -7,7 +7,9 @@ public enum BuildingLifeCycle {
   PLANNED((short) 2, "Planned"),
   BUILDING((short) 3, "Building"),
   DEMOLISHED((short) 4, "Demolished"),
-  UNDER_CONSTRUCTION((short) 5, "Under Construction");
+  UNDER_CONSTRUCTION((short) 5, "UnderConstruction"),
+  // Not sure if the numbers below are what's actually in the XML file
+  UNDETERMINED((short) 6, "Undetermined");
 
   private final short id;
   private final String value;
@@ -28,7 +30,8 @@ public enum BuildingLifeCycle {
   public static BuildingLifeCycle fromString(final String text) {
     if (text != null) {
       for (final BuildingLifeCycle b : BuildingLifeCycle.values()) {
-        if (text.equalsIgnoreCase(b.value)) {
+        // Remove all spaces bc some entries don't have spaces in the LifeCycle string
+        if (text.replaceAll("\\s+","").equalsIgnoreCase(b.value)) {
           return b;
         }
       }

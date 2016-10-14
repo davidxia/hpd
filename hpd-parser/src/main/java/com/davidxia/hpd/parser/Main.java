@@ -12,8 +12,9 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -48,11 +49,11 @@ public class Main {
     final ScheduledExecutorService pgExecutor = createPostgresExecutor();
     final PgBuildingStore buildingStore = PgBuildingStore.create(conn, pgExecutor);
 
-    final String file = config.getString("dataFile");
-    try (final Stream<String> stream = Files.lines(Paths.get(file))) {
+    final List<CompletableFuture> futures = new ArrayList<>();
+
+    try (final Stream<String> stream = Files.lines(Paths.get(config.getString("dataFile")))) {
       final AtomicBoolean isFirstLine = new AtomicBoolean(true);
       stream.forEach(line -> {
-        LOG.info("Line {}", line);
         if (isFirstLine.get()) {
           // First line is the header
           final String fields = line.replaceAll("\\s+","");
@@ -65,19 +66,20 @@ public class Main {
 
         try {
           final Building building = buildingParser.parse(line, "\\|");
-          LOG.info("Building {}", building);
-          final CompletionStage<Void> cs = buildingStore.writeBuilding(building);
-          final Void aVoid = cs.toCompletableFuture().get();
-        } catch (IllegalArgumentException e) {
+          futures.add(buildingStore.writeBuilding(building).toCompletableFuture());
+        } catch (RuntimeException e) {
+          LOG.error("Could not parse string {}", line, e);
           stringSaver.save(line).exceptionally(t -> {
-            LOG.error("Could not save string {}: {}", line, t);
+            LOG.error("Could not save string {}", line, t);
             return null;
           });
-        } catch (InterruptedException | ExecutionException e) {
-          throw Throwables.propagate(e);
         }
       });
     }
+
+    System.out.println("HI");
+    CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).get();
+    System.out.println("DONE");
   }
 
   private static ScheduledExecutorService createPostgresExecutor() {
@@ -87,18 +89,5 @@ public class Main {
         .build();
     return Executors.newScheduledThreadPool(16, threadFactory);
   }
-
-//  private static void readXml(final String path) throws Exception {
-//    System.out.println("reading from " + path);
-//    final File xmlFile = new File(path);
-//    final DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-//    final DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-//    final Document doc = dBuilder.parse(xmlFile);
-//    doc.getDocumentElement().normalize();
-//
-//    System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
-//    System.out.println("hi");
-//
-//  }
 
 }

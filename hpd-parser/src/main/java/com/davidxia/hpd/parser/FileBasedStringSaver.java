@@ -1,10 +1,13 @@
 package com.davidxia.hpd.parser;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 
 import java.io.BufferedWriter;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
@@ -21,7 +24,8 @@ final class FileBasedStringSaver implements StringSaver {
 
   static FileBasedStringSaver create(final String path, final Executor executor)
       throws IOException {
-    final BufferedWriter bw = new BufferedWriter(new FileWriter(path, true));
+    final Writer writer = new OutputStreamWriter(new FileOutputStream(path, true), Charsets.UTF_8);
+    final BufferedWriter bw = new BufferedWriter(writer);
     return new FileBasedStringSaver(bw, executor);
   }
 

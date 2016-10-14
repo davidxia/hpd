@@ -9,7 +9,7 @@ import com.davidxia.hpd.model.RecordStatus;
 
 import java.time.Instant;
 
-final class DefaultBuildingParser implements BuildingParser{
+final class DefaultBuildingParser implements BuildingParser {
 
   private DefaultBuildingParser() {
   }
@@ -19,36 +19,43 @@ final class DefaultBuildingParser implements BuildingParser{
   }
 
   /**
-   * @throws IllegalArgumentException if line isn't parseable into {@link Building}
+   * @throws IllegalArgumentException if line isn't parseable into {@link Building}.
    */
   @Override
   public Building parse(final String line, final String delimiter) {
-      final String[] parts = line.split(delimiter);
-      final Instant now = Instant.now();
+    final String[] parts = line.split(delimiter);
+    final Instant now = Instant.now();
 
-      return new BuildingBuilder()
-          .hpdId(Integer.valueOf(parts[0]))
-          .boro(Boro.from(Integer.valueOf(parts[1]), parts[2]))
+    return new BuildingBuilder()
+          .hpdId(Integer.parseInt(parts[0]))
+          .boro(Boro.from(Integer.parseInt(parts[1]), parts[2]))
           .houseNum(parts[3])
           .highHouseNum(parts[4])
           .lowHouseNum(parts[5])
           .streetName(parts[6])
           .zip(parts[7])
-          .block(Short.valueOf(parts[8]))
-          .lot(Short.valueOf(parts[9]))
-          .bin(Integer.valueOf(parts[10]))
-          .communityBoard(Integer.valueOf(parts[11]))
+          .block(Integer.parseInt(parts[8]))
+          .lot(Short.parseShort(parts[9]))
+
+          // Sometimes these fields are missing
+          .bin(parseInt(parts[10]))
+          .communityBoard(parseInt(parts[11]))
           .censusTract(parts[12])
           .managementProgram(parts[13])
-          .dobBuildingClass(DobBuildingClass.from(Integer.valueOf(parts[14]), parts[15]))
-          .legalStories(Integer.valueOf(parts[16]))
-          .legalClassA(Integer.valueOf(parts[17]))
-          .legalClassB(Integer.valueOf(parts[18]))
-          .registrationId(Integer.valueOf(parts[19]))
+          .dobBuildingClass(DobBuildingClass.from(parts[14], parts[15]))
+          .legalStories(parseInt(parts[16]))
+          .legalClassA(parseInt(parts[17]))
+          .legalClassB(parseInt(parts[18]))
+
+          .registrationId(Integer.parseInt(parts[19]))
           .buildingLifeCycle(BuildingLifeCycle.fromString(parts[20]))
-          .recordStatus(RecordStatus.from(Short.valueOf(parts[21]), parts[22]))
+          .recordStatus(RecordStatus.from(Short.parseShort(parts[21]), parts[22]))
           .created(now)
           .updated(now)
           .build();
+  }
+
+  private static Integer parseInt(final String str) {
+    return str.isEmpty() ? null : Integer.parseInt(str);
   }
 }
