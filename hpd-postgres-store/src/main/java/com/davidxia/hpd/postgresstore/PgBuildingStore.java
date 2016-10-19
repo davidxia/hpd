@@ -20,6 +20,14 @@ public class PgBuildingStore extends BasePgStore implements BuildingReader, Buil
 
   private static final Logger LOG = LoggerFactory.getLogger(PgBuildingStore.class);
 
+  private static final String QUERY =
+      "INSERT INTO buildings "
+      + "(hpd_id, boro_id, house_num, low_house_num, high_house_num, street_name, "
+      + "zip, block, lot, bin, community_board, census_tract, management_program, "
+      + "dob_building_class_id, legal_stories, legal_class_a, legal_class_b, "
+      + "registration_id, life_cycle_id, record_status_id, created, updated) VALUES "
+      + "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
   private PgBuildingStore(final Connection conn, final Executor executor) {
     super(conn, executor);
   }
@@ -35,15 +43,8 @@ public class PgBuildingStore extends BasePgStore implements BuildingReader, Buil
 
   @Override
   public CompletionStage<Void> writeBuilding(final Building building) {
-    final String query =
-        "INSERT INTO buildings "
-        + "(hpd_id, boro_id, house_num, low_house_num, high_house_num, street_name, "
-        + "zip, block, lot, bin, community_board, census_tract, management_program, "
-        + "dob_building_class_id, legal_stories, legal_class_a, legal_class_b, "
-        + "registration_id, life_cycle_id, record_status_id, created, updated) VALUES "
-        + "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     return supplyAsync(() -> {
-      try (final PreparedStatement st = conn.prepareStatement(query)) {
+      try (final PreparedStatement st = conn.prepareStatement(QUERY)) {
         st.setInt(1, building.hpdId());
         st.setShort(2, building.boro().id());
         st.setString(3, building.houseNum());

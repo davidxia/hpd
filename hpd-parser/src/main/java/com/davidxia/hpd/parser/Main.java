@@ -33,15 +33,7 @@ public class Main {
     final String expectedFields = config.getString("fields");
     final Config pgConfig = config.getConfig("postgres");
 
-    final Connection conn;
-    try {
-      conn = DriverManager.getConnection(
-          pgConfig.getString("connectionString"),
-          pgConfig.getString("username"),
-          pgConfig.getString("password"));
-    } catch (SQLException e) {
-      throw Throwables.propagate(e);
-    }
+    final Connection conn = getConnection(pgConfig);
 
     final BuildingParser buildingParser = DefaultBuildingParser.create();
     final StringSaver stringSaver = FileBasedStringSaver.create(
@@ -77,9 +69,20 @@ public class Main {
       });
     }
 
-    System.out.println("HI");
+    LOG.info("Waiting on db writes to finish");
     CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).get();
-    System.out.println("DONE");
+    LOG.info("Finished");
+  }
+
+  private static Connection getConnection(final Config pgConfig) {
+    try {
+      return DriverManager.getConnection(
+          pgConfig.getString("connectionString"),
+          pgConfig.getString("username"),
+          pgConfig.getString("password"));
+    } catch (SQLException e) {
+      throw Throwables.propagate(e);
+    }
   }
 
   private static ScheduledExecutorService createPostgresExecutor() {
